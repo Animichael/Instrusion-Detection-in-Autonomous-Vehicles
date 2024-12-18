@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AV Security System</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/static/img/favicon.png">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <!-- Fontawesome CSS -->
+    <link rel="stylesheet" href="/static/css/fontawesome-all.min.css">
+    <!-- Your custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="dashboard-body">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+        <div class="user-info">
+            <img src="/static/img/img-admin.png" alt="User Avatar" class="user-avatar">
+            <h5>Welcome, {{ name }}</h5>
+        </div>
+
+        <ul class="list-unstyled components">
+            <li class="{{ 'active' if request.endpoint == 'dashboard' }}">
+                <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'vehicle_registration' }}">
+                <a href="{{ url_for('vehicle_registration') }}"><i class="fas fa-car"></i>Vehicle Registration</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'intrusion_detection' }}">
+                <a href="{{ url_for('intrusion_detection') }}"><i class="fas fa-shield-alt"></i>Intrusion Detection</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'vehicle_status' }}">
+                <a href="{{ url_for('vehicle_status') }}"><i class="fas fa-car"></i> Vehicle Status</a>
+            </li>
+            
+            <li class="{{ 'active' if request.endpoint == 'analytics' }}">
+                <a href="{{ url_for('analytics') }}"><i class="fas fa-chart-line"></i> Analytics</a>
+            </li>
+            <li class="{{ 'active' if request.endpoint == 'settings' }}">
+                <a href="{{ url_for('settings') }}"><i class="fas fa-cog"></i> Settings</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <button type="button" id="sidebarCollapse" class="btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="ml-auto">
+                <div class="user-dropdown">
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="dashboard-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const sidebarCollapse = document.getElementById('sidebarCollapse');
+
+            sidebarCollapse.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                content.classList.toggle('expanded');
+            });
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

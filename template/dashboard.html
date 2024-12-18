@@ -1,0 +1,256 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<style>
+    /* Stats Cards Styling */
+    .stats-cards .card {
+        height: 100%;
+        transition: transform 0.3s ease;
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+    }
+
+    .stats-cards .card:hover {
+        transform: translateY(-3px);
+    }
+
+    .stats-cards .card-body {
+        padding: 1.25rem;
+    }
+
+    .stats-cards .card-body h5 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #4e73df;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .stats-cards .card-body h2 {
+        margin-top: 10px;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #5a5c69;
+    }
+
+    /* Alert Icon Styling */
+    .fa-exclamation-triangle.alert-icon {
+        color: #dc3545 !important;
+        animation: shake 0.5s ease-in-out infinite;
+        animation-delay: 5s;
+        font-size: 1.1rem;
+    }
+    
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+    
+    .alert-icon:hover {
+        animation-play-state: paused;
+    }
+
+    /* Recent Alerts Styling */
+    .alert-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #e3e6f0;
+        display: flex;
+        align-items: center;
+    }
+
+    .alert-item:last-child {
+        border-bottom: none;
+    }
+
+    .alert-item i {
+        margin-right: 15px;
+        font-size: 1.2rem;
+    }
+
+    .alert-item span {
+        flex-grow: 1;
+        font-size: 0.9rem;
+    }
+
+    .alert-item small {
+        color: #858796;
+        font-size: 0.8rem;
+    }
+
+    /* Security Chart Styling */
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 1rem 1.25rem;
+    }
+
+    .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #4e73df;
+    }
+</style>
+
+<!-- Stats Cards -->
+<div class="row stats-cards">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="fas fa-car"></i> Active Vehicles</h5>
+                <h2>{{ vehicle_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="fas fa-shield-alt"></i> Security Score</h5>
+                <h2>94%</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>
+                    <i class="fas fa-exclamation-triangle alert-icon"></i> 
+                    <span>Alerts</span>
+                </h5>
+                <h2>{{ attack_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5><i class="fas fa-check-circle"></i> Systems Online</h5>
+                <h2>0%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Panels -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Security Overview</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="securityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Alerts</h5>
+            </div>
+            <div class="card-body">
+                {% if latest_attack %}
+                <div class="alert-item">
+                    <i class="fas fa-exclamation-circle text-warning"></i>
+                    <span>Unusual network activity detected ({{ latest_attack.attack_type }})</span>
+                    <small>{{ attack_time }}</small>
+                </div>
+                {% endif %}
+
+                {% if latest_registration %}
+                <div class="alert-item">
+                    <i class="fas fa-check-circle text-success"></i>
+                    <span>System Registration Completed ({{ latest_registration.model }})</span>
+                    <small>{{ registration_time }}</small>
+                </div>
+                {% endif %}
+
+                {% if login_time %}
+                <div class="alert-item">
+                    <i class="fas fa-user-clock text-info"></i>
+                    <span>Last System Access</span>
+                    <small>{{ login_time }}</small>
+                </div>
+                {% endif %}
+
+                {% if not latest_attack and not latest_registration and not login_time %}
+                <div class="alert-item">
+                    <i class="fas fa-info-circle text-info"></i>
+                    <span>No recent activities</span>
+                    <small>-</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart Configuration
+const ctx = document.getElementById('securityChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ security_labels | tojson | safe }},
+        datasets: [{
+            label: 'Security Score',
+            data: {{ security_data | tojson | safe }},
+            borderColor: '#4e73df',
+            tension: 0.3
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Security Score: ' + context.raw + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+
+
+    // Alert Icon Animation
+    function restartAnimation() {
+        const icon = document.querySelector('.alert-icon');
+        if (icon) {
+            icon.style.animation = 'none';
+            icon.offsetHeight; // Trigger reflow
+            icon.style.animation = 'shake 0.5s ease-in-out infinite';
+        }
+    }
+    
+    // Initial animation delay
+    const icon = document.querySelector('.alert-icon');
+    if (icon) {
+        setTimeout(() => {
+            icon.style.animation = 'shake 0.5s ease-in-out infinite';
+        }, 5000);
+    }
+    
+    // Restart animation every 5 seconds
+    setInterval(restartAnimation, 5000);
+});
+</script>
+{% endblock %}

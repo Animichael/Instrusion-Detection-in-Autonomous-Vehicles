@@ -1,0 +1,426 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<style>
+    .modern-input {
+        border: 2px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+        box-shadow: none;
+    }
+    .modern-input:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    .modern-label {
+        font-weight: 500;
+        color: #4e4e4e;
+        margin-bottom: 8px;
+    }
+    .error-popup {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        background: #fff;
+        border-left: 4px solid #dc3545;
+        border-radius: 4px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    }
+
+.attack-definition p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #000;
+}
+    .typewriter {
+            overflow: hidden;
+            white-space: pre-wrap;
+            margin: 0;
+            color: #000;  
+            letter-spacing: 0;
+}
+    @keyframes slideIn {
+        from {transform: translateX(100%); opacity: 0;}
+        to {transform: translateX(0); opacity: 1;}
+    }
+    
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .was-validated .form-control:invalid {
+        border-color: #dc3545;
+    }
+
+    .was-validated .form-control:invalid + .invalid-feedback {
+        display: block;
+    }
+
+    .form-control:disabled {
+        background-color: #e9ecef;
+        opacity: 0.7;
+    }
+
+    .result-section {
+        display: none;
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        border: 0.25em solid #f3f3f3;
+        border-right-color: #4e73df;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {transform: rotate(360deg);}
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-shield-alt"></i> Intrusion Detection System</h5>
+            </div>
+            <div class="card-body">
+                <!-- Main Form -->
+                <form id="intrusionForm" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="modern-label" for="vehicle_select">Vehicle Model & Device ID</label>
+                                <select class="form-control modern-input" id="vehicle_select" name="vehicle_select" required>
+                                    <option value="">Select Vehicle</option>
+                                    {% for vehicle in vehicle_data %}
+                                        <option value="{{ vehicle.device_id }}" 
+                                                data-can-id="{{ vehicle.can_id }}">
+                                            {{ vehicle.display }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">Please select a vehicle</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="modern-label" for="CAN_ID">CAN ID</label>
+                                <input type="text" class="form-control modern-input" id="CAN_ID" 
+                                       name="CAN_ID" readonly required>
+                                <div class="invalid-feedback">CAN ID is required</div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <label class="modern-label" for="is_zero_payload">Is Zero Payload</label>
+                                <select class="form-control modern-input" id="is_zero_payload" 
+                                        name="is_zero_payload" required disabled>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an option</div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="row">
+                        {% for i in range(1, 9) %}
+                        <div class="col-md-3">
+                            <div class="form-group mb-3">
+                                <label class="modern-label" for="payload_byte{{ i }}">Payload Byte {{ i }}</label>
+                                <input type="text" class="form-control modern-input" 
+                                       id="payload_byte{{ i }}" name="payload_byte{{ i }}" 
+                                       required disabled>
+                                <div class="invalid-feedback">Please enter a valid number</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" disabled>
+                            <i class="fas fa-search"></i> Detect Attack
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Results Section -->
+                <div id="resultSection" class="result-section">
+                    <div id="loadingSpinner" class="text-center mb-4" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-2">Analyzing...</p>
+                    </div>
+
+                    <div id="resultContent">
+                        <div id="predictionResult" class="alert" role="alert"></div>
+                        
+                        <!-- Attack Definition -->
+                        <div id="attackDefinition" class="attack-definition">
+                            <h5 class="mb-3">Attack Information</h5>
+                            <p id="definitionText" class="typewriter"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Popup -->
+<div class="error-popup" id="errorPopup">
+    <i class="fas fa-exclamation-circle me-2"></i>
+    <span>Input field does not allow string or text value, only numbers.</span>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const attackDefinitions = {
+    "DoS Attack": `A Denial of Service (DoS) Attack in vehicle networks involves:
+
+1. Flooding the CAN bus with high-priority messages
+2. Preventing legitimate messages from being transmitted
+3. Disrupting critical vehicle functions
+4. Causing system-wide communication failures
+
+Impact:
+- Loss of vehicle control functions
+- Delayed response to commands
+- Potential safety hazards
+- System instability`,
+
+    "Fuzzy Attack": `A Fuzzy Attack is a type of intrusion in a communication network, particularly in systems like Controller Area Networks (CAN) used in vehicles. It involves sending malformed, random, or unexpected data to the network in an attempt to exploit vulnerabilities, cause disruptions, or overload the system.
+    
+A Fuzzy Attack on vehicle systems involves:
+
+1. Random CAN message injection
+2. System state manipulation
+3. Sensor reading confusion
+4. Control system disruption
+
+Impact:
+- Unpredictable vehicle behavior
+- False sensor readings
+- Control system instability
+- Component malfunction risks`,
+
+    "RPM Attack": `An RPM (Revolutions Per Minute) Attack targets:
+
+1. Engine management systems
+2. Speed control mechanisms
+3. Vehicle performance metrics
+4. Transmission behavior
+
+Impact:
+- Sudden speed changes
+- Engine performance issues
+- Vehicle stability problems
+- Safety system interference`,
+
+    "gear Attack": `A Gear Attack compromises:
+
+1. Transmission control systems
+2. Gear selection mechanisms
+3. Vehicle speed management
+4. Drivetrain operations
+
+Impact:
+- Unexpected gear changes
+- Vehicle control issues
+- Potential mechanical damage
+- Critical safety concerns`
+};
+
+function showError(message) {
+    const errorPopup = document.getElementById('errorPopup');
+    errorPopup.querySelector('span').textContent = message;
+    errorPopup.style.display = 'block';
+    setTimeout(() => {
+        errorPopup.style.display = 'none';
+    }, 3000);
+}
+
+function typeWriterEffect(text, element) {
+    element.innerHTML = '';
+    element.style.display = 'block';
+    
+    const lines = text.split('\n');
+    let lineIndex = 0;
+    let charIndex = 0;
+    
+    function type() {
+        if (lineIndex < lines.length) {
+            if (charIndex < lines[lineIndex].length) {
+                element.innerHTML += lines[lineIndex][charIndex];
+                charIndex++;
+                setTimeout(type, 25);  // Slightly adjusted timing
+            } else {
+                element.innerHTML += '<br>';
+                lineIndex++;
+                charIndex = 0;
+                setTimeout(type, 50);
+            }
+        }
+    }
+    type();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Form elements
+    const form = document.getElementById('intrusionForm');
+    const vehicleSelect = document.getElementById('vehicle_select');
+    const canIdInput = document.getElementById('CAN_ID');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const isZeroPayload = document.getElementById('is_zero_payload');
+    const payloadInputs = form.querySelectorAll('input[id^="payload_byte"]');
+    
+    // Result elements
+    const resultSection = document.getElementById('resultSection');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const predictionResult = document.getElementById('predictionResult');
+    const attackDefinition = document.getElementById('attackDefinition');
+    const definitionText = document.getElementById('definitionText');
+
+    function validateForm() {
+        let isValid = true;
+        
+        // Check vehicle selection
+        if (!vehicleSelect.value) {
+            vehicleSelect.classList.add('is-invalid');
+            isValid = false;
+        }
+
+        // Check payload inputs
+        payloadInputs.forEach(input => {
+            if (!input.disabled && (!input.value || !/^\d+$/.test(input.value))) {
+                input.classList.add('is-invalid');
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function toggleFormFields(enable) {
+        isZeroPayload.disabled = !enable;
+        payloadInputs.forEach(input => {
+            input.disabled = !enable;
+            if (!enable) {
+                input.value = '';
+                input.classList.remove('is-invalid');
+            }
+        });
+        submitButton.disabled = !enable;
+    }
+
+    // Vehicle selection handler
+    vehicleSelect.addEventListener('change', function() {
+        this.classList.remove('is-invalid');
+        if (this.value) {
+            const selectedOption = this.options[this.selectedIndex];
+            canIdInput.value = selectedOption.getAttribute('data-can-id');
+            toggleFormFields(true);
+        } else {
+            canIdInput.value = '';
+            toggleFormFields(false);
+            resultSection.style.display = 'none';
+        }
+    });
+
+    // Numeric input validation
+    payloadInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('is-invalid');
+            if (!/^\d*$/.test(this.value)) {
+                this.value = this.value.replace(/[^\d]/g, '');
+                showError('Input field does not allow string or text value, only numbers.');
+            }
+        });
+    });
+
+    // Form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            showError('Please fill all required fields correctly.');
+            return;
+        }
+
+        resultSection.style.display = 'block';
+        loadingSpinner.style.display = 'block';
+        predictionResult.style.display = 'none';
+        attackDefinition.style.display = 'none';
+
+        const formData = {
+                vehicle_model: vehicleSelect.options[vehicleSelect.selectedIndex].text.split('(')[0].trim(),
+                device_id: vehicleSelect.value,
+                CAN_ID: parseInt(canIdInput.value),
+                is_zero_payload: parseInt(isZeroPayload.value),
+                ...Array.from(payloadInputs).reduce((acc, input, index) => {
+                    acc[`payload_byte${index + 1}`] = parseInt(input.value);
+                    return acc;
+                }, {})
+            };
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+            
+            loadingSpinner.style.display = 'none';
+            predictionResult.style.display = 'block';
+
+            if (result.error) {
+                predictionResult.className = 'alert alert-danger';
+                predictionResult.textContent = 'Error: ' + result.error;
+            } else {
+                if (result.prediction === "There is no threat") {
+                    predictionResult.className = 'alert alert-success';
+                    attackDefinition.style.display = 'none';
+                } else {
+                    predictionResult.className = 'alert alert-danger';
+                    const definition = attackDefinitions[result.prediction] || 'No definition available for this attack type.';
+                    typeWriterEffect(definition, definitionText);
+                    attackDefinition.style.display = 'block';
+                }
+                predictionResult.textContent = result.prediction;
+            }
+        } catch (error) {
+            loadingSpinner.style.display = 'none';
+            predictionResult.style.display = 'block';
+            predictionResult.className = 'alert alert-danger';
+            predictionResult.textContent = 'Error connecting to server';
+        }
+    });
+
+    // Initialize form state
+    toggleFormFields(false);
+});
+</script>
+{% endblock %}

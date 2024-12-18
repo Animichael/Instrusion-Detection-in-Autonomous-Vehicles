@@ -1,0 +1,202 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<style>
+    .analytics-card {
+        border: none;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+        margin-bottom: 24px;
+    }
+    
+    .analytics-card .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 1rem 1.25rem;
+    }
+    
+    .analytics-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #4e73df;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin: 20px;
+    }
+    
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .stat-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card h4 {
+        color: #4e73df;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    
+    .stat-card .value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #5a5c69;
+    }
+</style>
+
+<!-- Summary Statistics -->
+<div class="stats-summary">
+    <div class="stat-card">
+        <h4>Total Attacks</h4>
+        <div class="value">{{ total_attacks }}</div>
+    </div>
+    <div class="stat-card">
+        <h4>Most Common Attack</h4>
+        <div class="value">{{ most_common_attack }}</div>
+    </div>
+    <div class="stat-card">
+        <h4>Most Targeted Model</h4>
+        <div class="value">{{ most_targeted_model }}</div>
+    </div>
+    <div class="stat-card">
+        <h4>Attack Rate</h4>
+        <div class="value">{{ attack_rate }}%</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <!-- Attack Trend Chart -->
+    <div class="col-md-8">
+        <div class="card analytics-card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line"></i> Attack Trend Analysis</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="attackTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Attack Distribution -->
+    <div class="col-md-4">
+        <div class="card analytics-card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Attack Distribution</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="attackDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicle Analysis -->
+<div class="row">
+    <div class="col-12">
+        <div class="card analytics-card">
+            <div class="card-header">
+                <h5><i class="fas fa-car"></i> Attacks by Vehicle Model</h5>
+            </div>
+            <div class="chart-container">
+                <canvas id="vehicleAttackChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// First, get the data from Flask
+const chartData = {{ chart_data | tojson | safe }}; //check out this error later
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Attack Trend Line Chart
+    const trendChart = new Chart(document.getElementById('attackTrendChart'), {
+        type: 'line',
+        data: {
+            labels: chartData.trend_labels,
+            datasets: [{
+                label: 'Daily Attacks',
+                data: chartData.trend_data,
+                fill: false,
+                borderColor: '#4e73df',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Attack Types Pie Chart
+    const typeChart = new Chart(document.getElementById('attackDistributionChart'), {
+        type: 'pie',
+        data: {
+            labels: chartData.attack_types,
+            datasets: [{
+                data: chartData.attack_values,
+                backgroundColor: [
+                    '#f6c23e' ,  // Yellow
+                    '#1cc88a' , // Green
+                    '#4e73df',  // Blue
+                    '#36b9cc',  // Cyan
+                     
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Vehicle Models Bar Chart
+    const vehicleChart = new Chart(document.getElementById('vehicleAttackChart'), {
+        type: 'bar',
+        data: {
+            labels: chartData.vehicle_models,
+            datasets: [{
+                label: 'Attacks per Vehicle Model',
+                data: chartData.vehicle_counts,
+                backgroundColor: '#4e73df'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

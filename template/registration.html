@@ -1,0 +1,114 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+
+<!-- Mirrored from affixtheme.com/html/xmee/demo/register-18.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 11 Dec 2024 10:51:31 GMT -->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>Registration Page</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- Favicon -->
+	<link rel="shortcut icon" type="image/x-icon" href="/static/img/favicon.png">
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="/static/css/bootstrap.min.css">
+	<!-- Fontawesome CSS -->
+	<link rel="stylesheet" href="/static/css/fontawesome-all.min.css">
+	<!-- Flaticon CSS -->
+	<link rel="stylesheet" href="/static/font/flaticon.css">
+	<!-- Google Web Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap" rel="stylesheet">
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+	
+    <div id="preloader" class="preloader">
+        <div class='inner'>
+            <div class='line1'></div>
+            <div class='line2'></div>
+            <div class='line3'></div>
+        </div>
+    </div>
+	
+
+	<section class="fxt-template-animation fxt-template-layout18" data-bg-image="/static/img/figure/motor.jpg">
+		{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+                <div class="custom-flash {{ category }}-flash">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle flash-icon"></i>
+                    {% else %}
+                        <i class="fas fa-exclamation-circle flash-icon"></i>
+                    {% endif %}
+                    <span class="flash-message">{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+		<div class="fxt-content">
+			
+			<div class="fxt-form">
+				<p>Create Account</p>
+				<form method="POST">
+					<div class="form-group">
+						<div class="fxt-transformY-50 fxt-transition-delay-1">
+							<input type="text" id="name" class="form-control" name="name" placeholder="Name" required="required">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="fxt-transformY-50 fxt-transition-delay-1">
+							<input type="email" id="email" class="form-control" name="email" placeholder="Email" required="required">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="fxt-transformY-50 fxt-transition-delay-2">
+							<input id="password" type="password" class="form-control" name="password" placeholder="********" required="required">
+							<i toggle="#password" class="fa fa-fw fa-eye toggle-password field-icon"></i>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="fxt-transformY-50 fxt-transition-delay-3">
+							<div class="fxt-checkbox-area">
+								<div class="checkbox">
+									<input id="checkbox1" type="checkbox">
+									<label for="checkbox1">Keep me logged in</label>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="fxt-transformY-50 fxt-transition-delay-4">
+							<button type="submit" class="fxt-btn-fill">Register</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			
+			<div class="fxt-footer">
+				<div class="fxt-transformY-50 fxt-transition-delay-9">
+					<p>Have an account?<a href="{{url_for('index')}}" class="switcher-text2 inline-text">Log in</a></p>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- jquery-->
+	<script src="/static/js/jquery.min.js"></script>
+	<!-- Bootstrap js -->
+	<script src="/static/js/bootstrap.min.js"></script>
+	<!-- Imagesloaded js -->
+	<script src="/static/js/imagesloaded.pkgd.min.js"></script>
+	<!-- Validator js -->
+	<script src="/static/js/validator.min.js"></script>
+	<!-- Custom Js -->
+	<script src="/static/js/main.js"></script>
+
+</body>
+
+</html>

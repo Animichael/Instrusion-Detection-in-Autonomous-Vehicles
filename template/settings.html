@@ -1,0 +1,205 @@
+{% extends "base_dashboard.html" %}
+
+{% block content %}
+<div class="settings-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show spinning-alert" role="alert">
+                    <div class="spinner-container">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <style>
+        .spinning-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .spinner-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fa-spinner {
+            color: inherit;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .alert.fade-out {
+            animation: slideOut 0.5s ease-in forwards;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                // Auto dismiss after 5 seconds
+                setTimeout(() => {
+                    alert.classList.add('fade-out');
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500); // Remove after fade out animation
+                }, 5000);
+            });
+        });
+    </script>
+    <div class="row">
+        <!-- Profile Update Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-edit"></i> Update Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('update_profile') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ user.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Current Password</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password">
+                            <small class="text-muted">Required only if changing password</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password">
+                            <small class="text-muted">Leave blank to keep current password</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Settings Section -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-paint-brush"></i> Theme Settings</h5>
+                </div>
+                <div class="card-body">
+                    <div class="theme-options">
+                        <label class="form-label">Select Theme</label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="theme" id="lightTheme" value="light" checked>
+                                <label class="form-check-label" for="lightTheme">
+                                    Light Theme
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="theme" id="darkTheme" value="dark">
+                                <label class="form-check-label" for="darkTheme">
+                                    Dark Theme
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        padding: 20px;
+    }
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        border: none;
+    }
+    .card-header {
+        background-color: #f8f9fc;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    .card-header h5 {
+        margin: 0;
+        color: #4e73df;
+        font-weight: 600;
+    }
+    .card-header h5 i {
+        margin-right: 10px;
+    }
+    .theme-options {
+        padding: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme switching functionality
+    const themeInputs = document.querySelectorAll('input[name="theme"]');
+    themeInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const theme = this.value;
+            fetch('{{ url_for("update_theme") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `theme=${theme}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.body.className = theme === 'dark' ? 'dark-theme' : '';
+                    // Persist theme preference
+                    localStorage.setItem('theme', theme);
+                }
+            });
+        });
+    });
+
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.querySelector(`input[value="${savedTheme}"]`).checked = true;
+        document.body.className = savedTheme === 'dark' ? 'dark-theme' : '';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,243 @@
+
+/* Dashboard Styles */
+.dashboard-body {
+    background: #f8f9fc;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  #sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #4e73df;
+    color: #fff;
+    transition: all 0.3s;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transition: all 0.3s ease-in-out;
+    z-index: 1000;
+  }
+  
+  #sidebar.active {
+    margin-left: -250px;
+  }
+  
+  #sidebar .sidebar-header {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background: #4668ce;
+    text-align: center;
+  }
+  
+  .user-info {
+    padding: 5px 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .user-info  h5{
+    color:#fff
+  }
+  .ml-auto{
+    margin-left:10px;
+  }
+  .user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+  }
+  
+  #sidebar ul.components {
+    padding: 20px 0;
+  }
+  
+  .list-unstyled li a i{
+    color:orange
+  }
+  #sidebar ul li a {
+    padding: 10px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  #sidebar ul li a:hover {
+    background: #5a7ce6;
+  }
+  
+  #sidebar ul li.active > a {
+    background: #5a7ce6;
+  }
+  
+  #sidebar ul li a i {
+    margin-right: 10px;
+  }
+  
+  #content {
+    width: calc(100% - 250px);
+    margin-left: 250px;
+    transition: all 0.3s ease-in-out;
+    min-height: 100vh;
+}
+  
+#sidebar.collapsed {
+    margin-left: -250px;
+}
+
+#content.expanded {
+    width: 100%;
+    margin-left: 0;
+}
+
+  .navbar {
+    background: #fff;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.15);
+    padding: 1rem;
+  }
+  
+  .dashboard-content {
+    padding: 20px;
+  }
+  
+  .stats-cards .card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58,59,69,.1);
+    transition: transform 0.3s ease;
+  }
+  
+  .stats-cards .card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .stats-cards .card h5 {
+    color: #4e73df;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+  }
+  
+  .stats-cards .card h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 10px 0 0;
+  }
+  
+  .alert-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .alert-item:last-child {
+    border: none;
+  }
+  
+  .alert-item i {
+    margin-right: 10px;
+  }
+  
+  .alert-item small {
+    display: block;
+    color: #888;
+    font-size: 0.8rem;
+    margin-left: 24px;
+  }
+  
+  @media (max-width: 414px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+    #content {
+        width: 100%;
+        margin-left: 0;
+    }
+  }
+  
+  
+
+
+/* Dashboard Flash Messages */
+.dashboard-flash-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: auto;
+    min-width: 300px;
+    max-width: 600px;
+}
+
+.dashboard-flash {
+    margin-bottom: 10px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.5s ease-out forwards, fadeOut 0.5s ease-out 1.5s forwards;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-flash .flash-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-flash.success-flash {
+    border-left: 4px solid #28a745;
+    background: linear-gradient(to right, rgba(40, 167, 69, 0.1), white);
+}
+
+.dashboard-flash.error-flash {
+    border-left: 4px solid #dc3545;
+    background: linear-gradient(to right, rgba(220, 53, 69, 0.1), white);
+}
+
+.dashboard-flash .flash-icon {
+    font-size: 20px;
+}
+
+.dashboard-flash.success-flash .flash-icon {
+    color: #28a745;
+}
+
+.dashboard-flash.error-flash .flash-icon {
+    color: #dc3545;
+}
+
+.dashboard-flash .flash-message {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
